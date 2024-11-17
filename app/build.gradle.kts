@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
@@ -18,6 +20,16 @@ android {
         vectorDrawables {
             useSupportLibrary = true
         }
+
+        // .env에서 설정한 supabase key값을 빌드시에 가져올 수 있도록 하는 코드
+        val props = Properties()
+        val envFile = rootProject.file(".env")
+        if (envFile.exists()) {
+            props.load(envFile.inputStream())
+        }
+
+        buildConfigField("String", "SUPABASE_URL", "\"${props["SUPABASE_URL"]}\"")
+        buildConfigField("String", "SUPABASE_KEY", "\"${props["SUPABASE_KEY"]}\"")
     }
 
     buildTypes {
@@ -66,4 +78,9 @@ dependencies {
     androidTestImplementation("androidx.compose.ui:ui-test-junit4")
     debugImplementation("androidx.compose.ui:ui-tooling")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
+
+    // supabase 라이브러리 추가
+    implementation(platform("io.github.jan-tennert.supabase:bom:3.0.2"))
+    implementation("io.github.jan-tennert.supabase:postgrest-kt")
+    implementation("io.ktor:ktor-client-android:3.0.1")
 }
