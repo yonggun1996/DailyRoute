@@ -2,7 +2,7 @@ import java.util.Properties
 
 plugins {
     id("com.android.application")
-    id("org.jetbrains.kotlin.android")
+    id("org.jetbrains.kotlin.android") version "1.9.0"
 }
 
 android {
@@ -50,6 +50,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
     composeOptions {
         kotlinCompilerExtensionVersion = "1.5.1"
@@ -83,4 +84,5 @@ dependencies {
     implementation(platform("io.github.jan-tennert.supabase:bom:3.0.2"))
     implementation("io.github.jan-tennert.supabase:postgrest-kt")
     implementation("io.ktor:ktor-client-android:3.0.1")
+    implementation("com.google.code.gson:gson:2.11.0")
 }

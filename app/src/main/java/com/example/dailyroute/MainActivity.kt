@@ -22,7 +22,9 @@ import androidx.compose.ui.unit.dp
 import com.example.dailyroute.common.CommonUI
 import com.example.dailyroute.listcode.CustomListItem
 import com.example.dailyroute.listcode.SubwayArriveData
+import com.example.dailyroute.repo.SupabaseRepo
 import com.example.dailyroute.ui.theme.DailyRouteTheme
+import com.example.dailyroute.viewmodel.SupabaseViewModel
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -48,7 +50,7 @@ class MainActivity : ComponentActivity() {
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     CommonUI.AppHeader()
-                    CommonUI.SearchBar(defalutText = "역 이름을 입력해주세요")
+                    CommonUI.SearchBar(defalutText = "역 이름을 입력해주세요", SupabaseViewModel(SupabaseRepo()))
                     ItemList(items = sampleItems)
                 }
             }
@@ -79,7 +81,7 @@ fun GreetingPreview() {
             }
 
             CommonUI.AppHeader()
-            CommonUI.SearchBar(defalutText = "역 이름을 입력해주세요")
+            CommonUI.SearchBar(defalutText = "역 이름을 입력해주세요", SupabaseViewModel(SupabaseRepo()))
             ItemList(items = sampleItems)
         }
     }
