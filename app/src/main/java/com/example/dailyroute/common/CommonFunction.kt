@@ -1,6 +1,7 @@
 package com.example.dailyroute.common
 
 import androidx.compose.ui.graphics.Color
+import com.example.dailyroute.R
 
 /* 모든 화면에서 공통으로 사용할 것 같은 함수들 */
 // 노선별 색상
@@ -26,5 +27,30 @@ fun getColorForRoute(routeType: String): androidx.compose.ui.graphics.Color {
         "서해선" -> Color(0xFF81A914)
         "신림선" -> Color(0xFF6789CA)
         else -> Color.Gray // 기본 색상
+    }
+}
+
+fun getLineImageRes(lineName: String): Int {
+    return when (lineName) {
+        "1호선" -> R.drawable.line1 // 1호선 이미지
+        "2호선" -> R.drawable.line2 // 2호선 이미지
+        "3호선" -> R.drawable.line3// 3호선 이미지
+        "4호선" -> R.drawable.line4 // 4호선 이미지
+        "5호선" -> R.drawable.line5 // 5호선 이미지
+        "6호선" -> R.drawable.line6 // 6호선 이미지
+        "7호선" -> R.drawable.line7 // 7호선 이미지
+        "8호선" -> R.drawable.line8 // 8호선 이미지
+        "9호선" -> R.drawable.line9 // 9호선 이미지
+        "GTX-A" -> R.drawable.line_gtx_a
+        "경의중앙선" -> R.drawable.line_kj
+        "공항철도" -> R.drawable.line_gc
+        "경춘선" -> R.drawable.line_gh
+        "수인분당선" -> R.drawable.line_sb
+        "신분당선" -> R.drawable.line_sbd
+        "경강선" -> R.drawable.line_kk
+        "우이신설선" -> R.drawable.line_us
+        "서해선" -> R.drawable.line_ws
+        "신림선" -> R.drawable.line19
+        else -> R.drawable.signatureicon // 기본 이미지 (플레이스홀더)
     }
 }

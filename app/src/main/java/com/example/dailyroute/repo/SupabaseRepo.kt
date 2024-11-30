@@ -11,10 +11,10 @@ import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
 
 data class StationData (
-    var STATN_ID: Int,
-    var SUBWAY_ID: Int,
-    var STATN_NM: String,
-    var LINE_NM: String,
+    var STATN_ID: Int,      // 전철역 id
+    var SUBWAY_ID: Int,     // 노선 id
+    var STATN_NM: String,   // 전철역 명
+    var LINE_NM: String,    // 호선
 )
 /*
  * MVVM에서 Model역할

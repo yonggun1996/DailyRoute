@@ -1,6 +1,7 @@
 package com.example.dailyroute.common
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -25,8 +26,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.dailyroute.repo.StationData
 import com.example.dailyroute.viewmodel.SupabaseViewModel
@@ -96,11 +100,37 @@ object CommonUI {
 
 @Composable
 fun SearchResultItem(item: StationData) {
-    Text(
-        text = item.STATN_NM,
+    Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 8.dp),
-        style = MaterialTheme.typography.bodyMedium
-    )
+            .background(Color.White)
+            .padding(vertical = 8.dp, horizontal = 16.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        // 이미지
+        Image(
+            painter = painterResource(id = getLineImageRes(item.LINE_NM)),
+            contentDescription = "Station Image",
+            modifier = Modifier
+                .size(48.dp) // 이미지 크기를 고정
+                .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)) // 배경 추가 (선택사항)
+        )
+
+        Spacer(modifier = Modifier.width(8.dp)) // 이미지와 텍스트 간격
+
+        // 전철역 이름
+        Text(
+            text = item.STATN_NM,
+            style = MaterialTheme.typography.bodyLarge,
+            modifier = Modifier.weight(1f),
+            textAlign = TextAlign.Start
+        )
+        // 호선 이름
+        Text(
+            text = item.LINE_NM,
+            style = MaterialTheme.typography.bodyLarge,
+            modifier = Modifier.padding(start = 8.dp),
+            textAlign = TextAlign.End
+        )
+    }
 }
