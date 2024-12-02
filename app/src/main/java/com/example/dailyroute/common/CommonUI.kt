@@ -1,18 +1,25 @@
 package com.example.dailyroute.common
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -27,6 +34,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -71,6 +79,7 @@ object CommonUI {
         var query by remember { mutableStateOf("") } // 검색어 관리 변수
         var active by remember { mutableStateOf(false) } // 검색 바 활성화 상태
         val searchResults by viewModel.searchResults.collectAsState() // 상태를 관찰하여 값이 변경되면 UI를 업데이트
+        var selectedIndex by remember { mutableStateOf<Int?>(null) }
 
         // material 디자인에서 제공하는 검색바 사용
         androidx.compose.material3.SearchBar(
@@ -78,6 +87,7 @@ object CommonUI {
             onQueryChange = {
                 // 검색하려는 데이터가 바뀔때 마다 호출
                 query = it
+                selectedIndex = null
                 viewModel.onSearchQueryChanged(query)
             }, // 검색어가 변경될 때 마다 호출
             onSearch = { /* 검색 로직 추가 */ }, // 검색이 실행될 때 호출
@@ -90,8 +100,16 @@ object CommonUI {
                 .padding(16.dp)
         ) {
             LazyColumn(modifier = Modifier.fillMaxSize()) {
-                items(searchResults) {item ->
-                    SearchResultItem(item = item)
+                itemsIndexed(searchResults) {index, item ->
+                    SearchResultItem(
+                        item = item,
+                        isSelected = selectedIndex == index, // 선택 상태 전달
+                        onClick = { clickedStation ->
+                            // 클릭 시 선택 상태 토글
+                            Log.d("DailyRoot", "item: $item")
+                            selectedIndex = if (selectedIndex == index) null else index
+                        }
+                    )
                 }
             }
         }
@@ -99,10 +117,15 @@ object CommonUI {
 }
 
 @Composable
-fun SearchResultItem(item: StationData) {
+fun SearchResultItem(
+    item: StationData,
+    isSelected: Boolean, // 선택 상태
+    onClick: (StationData) -> Unit // 클릭 이벤트 핸들러
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
+            .clickable { onClick(item) }
             .background(Color.White)
             .padding(vertical = 8.dp, horizontal = 16.dp),
         verticalAlignment = Alignment.CenterVertically
@@ -132,5 +155,43 @@ fun SearchResultItem(item: StationData) {
             modifier = Modifier.padding(start = 8.dp),
             textAlign = TextAlign.End
         )
+    }
+    // 선택된 경우 버튼 추가
+    if (isSelected) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 8.dp),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Button(
+                onClick = { /* 상행 버튼 동작 */ },
+                modifier = Modifier
+                    .weight(1f)
+                    .height(100.dp)
+                    .padding(4.dp),
+                shape = RectangleShape,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = getColorForRoute(item.LINE_NM),
+                    contentColor = Color.White
+                )
+            ) {
+                Text("어디 방면")
+            }
+            Button(
+                onClick = { /* 하행 버튼 동작 */ },
+                modifier = Modifier
+                    .weight(1f)
+                    .height(100.dp)
+                    .padding(4.dp),
+                shape = RectangleShape,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = getColorForRoute(item.LINE_NM),
+                    contentColor = Color.White
+                )
+            ) {
+                Text("어디 방면")
+            }
+        }
     }
 }
