@@ -90,4 +90,8 @@ dependencies {
     //api 호출
     implementation ("com.squareup.okhttp3:okhttp:4.11.0")
     implementation ("com.squareup.okhttp3:logging-interceptor:4.10.0") // 디버깅용 로그
+
+    // json을 kotlin문법으로 변환하기 위한 라이브러리
+    implementation ("com.squareup.moshi:moshi:1.15.0")
+    implementation ("com.squareup.moshi:moshi-kotlin:1.15.0")
 }

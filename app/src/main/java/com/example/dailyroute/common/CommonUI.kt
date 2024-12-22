@@ -1,6 +1,7 @@
 package com.example.dailyroute.common
 
 import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -26,10 +27,12 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -42,8 +45,13 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.dailyroute.repo.StationData
 import com.example.dailyroute.repo.SubwayArriveRepo
+import com.example.dailyroute.repo.SubwayData
 import com.example.dailyroute.viewmodel.SubwayArriveViewModel
 import com.example.dailyroute.viewmodel.SupabaseViewModel
+import com.squareup.moshi.Moshi
+import com.squareup.moshi.Types
+import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
+import org.json.JSONArray
 
 object CommonUI {
 
@@ -84,7 +92,6 @@ object CommonUI {
         var active by remember { mutableStateOf(false) } // 검색 바 활성화 상태
         val searchResults by viewModel.searchResults.collectAsState() // 상태를 관찰하여 값이 변경되면 UI를 업데이트
         var selectedIndex by remember { mutableStateOf<Int?>(null) }
-        val subwayArriveData by subwayArriveViewModel.data.collectAsState()
 
         // material 디자인에서 제공하는 검색바 사용
         androidx.compose.material3.SearchBar(
@@ -123,88 +130,96 @@ object CommonUI {
                 }
             }
         }
-
-        subwayArriveData.let {
-            Log.d("DailyRoot", "선택한역의 실시간 정보 : $it")
-        }
     }
-}
 
-@Composable
-fun SearchResultItem(
-    item: StationData,
-    isSelected: Boolean, // 선택 상태
-    onClick: (StationData) -> Unit // 클릭 이벤트 핸들러
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { onClick(item) }
-            .background(Color.White)
-            .padding(vertical = 8.dp, horizontal = 16.dp),
-        verticalAlignment = Alignment.CenterVertically
+    @Composable
+    fun SearchResultItem(
+        item: StationData,
+        isSelected: Boolean, // 선택 상태
+        onClick: (StationData) -> Unit // 클릭 이벤트 핸들러
     ) {
-        // 이미지
-        Image(
-            painter = painterResource(id = getLineImageRes(item.LINE_NM)),
-            contentDescription = "Station Image",
-            modifier = Modifier
-                .size(48.dp) // 이미지 크기를 고정
-                .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)) // 배경 추가 (선택사항)
-        )
-
-        Spacer(modifier = Modifier.width(8.dp)) // 이미지와 텍스트 간격
-
-        // 전철역 이름
-        Text(
-            text = item.STATN_NM,
-            style = MaterialTheme.typography.bodyLarge,
-            modifier = Modifier.weight(1f),
-            textAlign = TextAlign.Start
-        )
-        // 호선 이름
-        Text(
-            text = item.LINE_NM,
-            style = MaterialTheme.typography.bodyLarge,
-            modifier = Modifier.padding(start = 8.dp),
-            textAlign = TextAlign.End
-        )
-    }
-    // 선택된 경우 버튼 추가
-    if (isSelected) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(top = 8.dp),
-            horizontalArrangement = Arrangement.SpaceBetween
+                .clickable { onClick(item) }
+                .background(Color.White)
+                .padding(vertical = 8.dp, horizontal = 16.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Button(
-                onClick = { /* 상행 버튼 동작 */ },
+            // 이미지
+            Image(
+                painter = painterResource(id = getLineImageRes(item.LINE_NM)),
+                contentDescription = "Station Image",
                 modifier = Modifier
-                    .weight(1f)
-                    .height(100.dp)
-                    .padding(4.dp),
-                shape = RectangleShape,
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = getColorForRoute(item.LINE_NM),
-                    contentColor = Color.White
-                )
-            ) {
-                Text("어디 방면")
-            }
-            Button(
-                onClick = { /* 하행 버튼 동작 */ },
-                modifier = Modifier
-                    .weight(1f)
-                    .height(100.dp)
-                    .padding(4.dp),
-                shape = RectangleShape,
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = getColorForRoute(item.LINE_NM),
-                    contentColor = Color.White
-                )
-            ) {
-                Text("어디 방면")
+                    .size(48.dp) // 이미지 크기를 고정
+                    .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)) // 배경 추가 (선택사항)
+            )
+
+            Spacer(modifier = Modifier.width(8.dp)) // 이미지와 텍스트 간격
+
+            // 전철역 이름
+            Text(
+                text = item.STATN_NM,
+                style = MaterialTheme.typography.bodyLarge,
+                modifier = Modifier.weight(1f),
+                textAlign = TextAlign.Start
+            )
+            // 호선 이름
+            Text(
+                text = item.LINE_NM,
+                style = MaterialTheme.typography.bodyLarge,
+                modifier = Modifier.padding(start = 8.dp),
+                textAlign = TextAlign.End
+            )
+        }
+        // 선택된 경우 버튼 추가
+        if (isSelected) {
+            val subwayArriveJson by subwayArriveViewModel.data.collectAsState() // 선택한 역의 실시간 정보 상태를 저장
+
+            if (subwayArriveJson != null) {
+                val reusltCode = subwayArriveJson?.getJSONObject("errorMessage")?.getString("code") ?: return
+                if (reusltCode != "INFO-000") return
+
+                val realtimeArrivalList = subwayArriveJson?.getJSONArray("realtimeArrivalList") ?: return
+                val subwayIdFilterResult = subwayArriveViewModel.getSubwayByIdArray(realtimeArrivalList, item.SUBWAY_ID.toString())
+                val nextStationResult = subwayArriveViewModel.extractStationFromTrainLine(subwayIdFilterResult)
+                Log.d("DailyRoot", "nextStationResult: ${nextStationResult}")
+
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 8.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Button(
+                        onClick = { /* 상행 버튼 동작 */ },
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(100.dp)
+                            .padding(4.dp),
+                        shape = RectangleShape,
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = getColorForRoute(item.LINE_NM),
+                            contentColor = Color.White
+                        )
+                    ) {
+                        Text("${nextStationResult["상행"] ?: nextStationResult["내선"]}")
+                    }
+                    Button(
+                        onClick = { /* 하행 버튼 동작 */ },
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(100.dp)
+                            .padding(4.dp),
+                        shape = RectangleShape,
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = getColorForRoute(item.LINE_NM),
+                            contentColor = Color.White
+                        )
+                    ) {
+                        Text("${nextStationResult["하행"] ?: nextStationResult["외선"]}")
+                    }
+                }
             }
         }
     }

@@ -9,6 +9,41 @@ import okhttp3.Request
 import okhttp3.Response
 import org.json.JSONObject
 
+data class SubwayData(
+    val beginRow: Int? = null,
+    val endRow: Int? = null,
+    val curPage: Int? = null,
+    val pageRow: Int? = null,
+    val totalCount: Int,
+    val rowNum: Int,
+    val selectedCount: Int,
+    val subwayId: String,
+    val subwayNm: String? = null,
+    val updnLine: String,
+    val trainLineNm: String,
+    val subwayHeading: String? = null,
+    val statnFid: String,
+    val statnTid: String,
+    val statnId: String,
+    val statnNm: String,
+    val trainCo: String? = null,
+    val trnsitCo: String,
+    val ordkey: String,
+    val subwayList: String,
+    val statnList: String,
+    val btrainSttus: String,
+    val barvlDt: String,
+    val btrainNo: String,
+    val bstatnId: String,
+    val bstatnNm: String,
+    val recptnDt: String,
+    val arvlMsg2: String,
+    val arvlMsg3: String,
+    val arvlCd: String,
+    val lstcarAt: String
+)
+
+
 // 지하철 도착 관련 api호출 및 비즈니스로직 처리하는 Model 구현부
 class SubwayArriveRepo {
     private val okHttpClient = OkHttpClient()
