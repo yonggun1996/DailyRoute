@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<network-security-config xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- swopenapi.seoul.go.kr 도메인에 대해 HTTP 허용 -->
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="true">swopenapi.seoul.go.kr</domain>
+    </domain-config>
+</network-security-config>

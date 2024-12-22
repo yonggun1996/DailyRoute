@@ -41,6 +41,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.dailyroute.repo.StationData
+import com.example.dailyroute.repo.SubwayArriveRepo
+import com.example.dailyroute.viewmodel.SubwayArriveViewModel
 import com.example.dailyroute.viewmodel.SupabaseViewModel
 
 object CommonUI {
@@ -48,6 +50,8 @@ object CommonUI {
     /*
      * 기본적으로 자주 사용하고 있는 ui를 공통적으로 사용하기 위해 해당 object에 생성
      */
+
+    private val subwayArriveViewModel = SubwayArriveViewModel(SubwayArriveRepo())
 
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
@@ -80,6 +84,7 @@ object CommonUI {
         var active by remember { mutableStateOf(false) } // 검색 바 활성화 상태
         val searchResults by viewModel.searchResults.collectAsState() // 상태를 관찰하여 값이 변경되면 UI를 업데이트
         var selectedIndex by remember { mutableStateOf<Int?>(null) }
+        val subwayArriveData by subwayArriveViewModel.data.collectAsState()
 
         // material 디자인에서 제공하는 검색바 사용
         androidx.compose.material3.SearchBar(
@@ -107,11 +112,20 @@ object CommonUI {
                         onClick = { clickedStation ->
                             // 클릭 시 선택 상태 토글
                             Log.d("DailyRoot", "item: $item")
+
+                            // 11.11 응암역이 업데잍트 되었음
+                            if (item.STATN_NM == "응암") item.STATN_NM = "응암순환(상선)"
+                            subwayArriveViewModel.fetchData(item.STATN_ID, item.STATN_NM)
+
                             selectedIndex = if (selectedIndex == index) null else index
                         }
                     )
                 }
             }
+        }
+
+        subwayArriveData.let {
+            Log.d("DailyRoot", "선택한역의 실시간 정보 : $it")
         }
     }
 }

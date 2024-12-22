@@ -30,6 +30,7 @@ android {
 
         buildConfigField("String", "SUPABASE_URL", "\"${props["SUPABASE_URL"]}\"")
         buildConfigField("String", "SUPABASE_KEY", "\"${props["SUPABASE_KEY"]}\"")
+        buildConfigField("String","SUBWAY_API_KEY", "\"${props["SUBWAY_API_KEY"]}\"")
     }
 
     buildTypes {
@@ -85,4 +86,8 @@ dependencies {
     implementation("io.github.jan-tennert.supabase:postgrest-kt")
     implementation("io.ktor:ktor-client-android:3.0.1")
     implementation("com.google.code.gson:gson:2.11.0")
+
+    //api 호출
+    implementation ("com.squareup.okhttp3:okhttp:4.11.0")
+    implementation ("com.squareup.okhttp3:logging-interceptor:4.10.0") // 디버깅용 로그
 }

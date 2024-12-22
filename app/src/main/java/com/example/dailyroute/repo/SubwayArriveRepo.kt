@@ -1,0 +1,41 @@
+package com.example.dailyroute.repo
+
+import android.util.Log
+import com.example.dailyroute.BuildConfig
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import okhttp3.Response
+import org.json.JSONObject
+
+// 지하철 도착 관련 api호출 및 비즈니스로직 처리하는 Model 구현부
+class SubwayArriveRepo {
+    private val okHttpClient = OkHttpClient()
+
+    // 지하철 실시간 도착api 호출 및 xml응답을 json으로 변환
+    suspend fun getSubwayArriveData(stationID: Int, statnNm: String): JSONObject? {
+        val SUBWAY_API_KEY = BuildConfig.SUBWAY_API_KEY
+        val requestURL = "http://swopenAPI.seoul.go.kr/api/subway/${SUBWAY_API_KEY}/json/realtimeStationArrival/0/99/${statnNm}"
+
+        return withContext(Dispatchers.IO) {  // IO 스레드에서 네트워크 요청 실행
+            val request = Request.Builder()
+                .url(requestURL)  // 한글이 포함된 URL
+                .build()
+
+            // 요청 실행 후 응답 받기
+            val response = okHttpClient.newCall(request).execute()
+
+            // 응답이 성공적이면, 응답 본문을 JSON으로 변환
+            if (response.isSuccessful) {
+                response.body?.string()?.let {
+                    // 응답 본문을 JSONObject로 변환하여 반환
+                    Log.d("DailyRoot", "getSubwayArriveData: $it")
+                    return@withContext JSONObject(it)
+                }
+            }
+            return@withContext null  // 응답이 실패하면 null 반환
+        }
+
+    }
+}
