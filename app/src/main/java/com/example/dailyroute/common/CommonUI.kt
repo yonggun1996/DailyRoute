@@ -174,23 +174,27 @@ object CommonUI {
         }
         // 선택된 경우 버튼 추가
         if (isSelected) {
-            val subwayArriveJson by subwayArriveViewModel.data.collectAsState() // 선택한 역의 실시간 정보 상태를 저장
+//            val subwayArriveJson by subwayArriveViewModel.data.collectAsState() // 선택한 역의 실시간 정보 상태를 저장
+//
+//            if (subwayArriveJson != null) {
+//                val reusltCode = subwayArriveJson?.getJSONObject("errorMessage")?.getString("code") ?: return
+//                if (reusltCode != "INFO-000") return
+//
+//                val realtimeArrivalList = subwayArriveJson?.getJSONArray("realtimeArrivalList") ?: return
+//                val subwayIdFilterResult = subwayArriveViewModel.getSubwayByIdArray(realtimeArrivalList, item.SUBWAY_ID.toString())
+//                val nextStationResult = subwayArriveViewModel.extractStationFromTrainLine(subwayIdFilterResult)
+//                Log.d("DailyRoot", "nextStationResult: ${nextStationResult}")
+//
+//
+//            }
 
-            if (subwayArriveJson != null) {
-                val reusltCode = subwayArriveJson?.getJSONObject("errorMessage")?.getString("code") ?: return
-                if (reusltCode != "INFO-000") return
-
-                val realtimeArrivalList = subwayArriveJson?.getJSONArray("realtimeArrivalList") ?: return
-                val subwayIdFilterResult = subwayArriveViewModel.getSubwayByIdArray(realtimeArrivalList, item.SUBWAY_ID.toString())
-                val nextStationResult = subwayArriveViewModel.extractStationFromTrainLine(subwayIdFilterResult)
-                Log.d("DailyRoot", "nextStationResult: ${nextStationResult}")
-
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 8.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 8.dp),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                if (item.UP_STATN_NM != null) {
                     Button(
                         onClick = { /* 상행 버튼 동작 */ },
                         modifier = Modifier
@@ -203,8 +207,11 @@ object CommonUI {
                             contentColor = Color.White
                         )
                     ) {
-                        Text("${nextStationResult["상행"] ?: nextStationResult["내선"]}")
+                        Text("${item.UP_STATN_NM}방면")
                     }
+                }
+
+                if (item.DOWN_STATN_NM != null) {
                     Button(
                         onClick = { /* 하행 버튼 동작 */ },
                         modifier = Modifier
@@ -217,7 +224,7 @@ object CommonUI {
                             contentColor = Color.White
                         )
                     ) {
-                        Text("${nextStationResult["하행"] ?: nextStationResult["외선"]}")
+                        Text("${item.DOWN_STATN_NM}방면")
                     }
                 }
             }
