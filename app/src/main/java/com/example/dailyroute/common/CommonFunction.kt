@@ -1,7 +1,11 @@
 package com.example.dailyroute.common
 
+import android.content.Context
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import com.example.dailyroute.R
+import java.util.UUID
 
 /* 모든 화면에서 공통으로 사용할 것 같은 함수들 */
 // 노선별 색상
@@ -53,4 +57,17 @@ fun getLineImageRes(lineName: String): Int {
         "신림선" -> R.drawable.line19
         else -> R.drawable.signatureicon // 기본 이미지 (플레이스홀더)
     }
+}
+
+/* uuid가 저장되어있는지 확인하는 로직 */
+fun getUUID (context: Context): String {
+    val sharedPreferences = context.getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
+    var uuid = sharedPreferences.getString("device_uuid", null)
+
+    if (uuid == null) {
+        uuid = UUID.randomUUID().toString()  // UUID 생성
+        sharedPreferences.edit().putString("device_uuid", uuid).apply()  // 저장
+    }
+
+    return uuid
 }

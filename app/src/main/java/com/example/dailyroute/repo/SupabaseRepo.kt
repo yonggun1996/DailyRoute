@@ -6,8 +6,10 @@ import com.google.gson.reflect.TypeToken
 import io.github.jan.supabase.createSupabaseClient
 import io.github.jan.supabase.postgrest.Postgrest
 import io.github.jan.supabase.postgrest.from
+import io.github.jan.supabase.postgrest.query.Columns
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import kotlinx.datetime.LocalDateTime
 import kotlinx.serialization.Serializable
 
 data class StationData (
@@ -18,6 +20,13 @@ data class StationData (
     var UP_STATN_NM: String?,   // 상행역
     var REGION_CODE: String,    // 지역구분
     var DOWN_STATN_NM: String?  // 하행역
+)
+
+// json필터링을 위한 클래스
+data class StationSelectData (
+    var STATN_NM: String,       // 선택한 역명
+    var LINE_NM: String,        // 호선
+    var UPDN_LINE: String       // 상,하행 / 내,외선
 )
 /*
  * MVVM에서 Model역할
@@ -49,6 +58,25 @@ class SupabaseRepo {
             val type = object : TypeToken<List<StationData>>() {}.type
             val stationList: List<StationData> = gson.fromJson(fetchData, type)
             stationList
+        }
+    }
+
+    // supabase를 통해 선택한 역의 정보들을 가져옴
+    suspend fun selectMyChoiceStation(uid: String): List<StationSelectData>{
+        return withContext(Dispatchers.IO) {
+
+            val fetchData = supabaseClient
+                .from("device_station_selection")
+                .select(columns = Columns.list("STATN_NM, LINE_NM, UPDN_LINE")) {
+                    filter {
+                        eq("DEVICE_ID", uid)
+                    }
+                }.data
+
+            val gson = Gson()
+            val type = object : TypeToken<List<StationSelectData>>() {}.type
+            val selectionStationList: List<StationSelectData> = gson.fromJson(fetchData, type)
+            selectionStationList
         }
     }
 }
