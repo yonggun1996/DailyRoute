@@ -75,7 +75,7 @@ class MainActivity : ComponentActivity() {
                     supabaseViewModel.onSearchSelectionList(uniqueID)
                     val sampleItems2 by supabaseViewModel.selectionList.collectAsState()
                     CommonUI.AppHeader()
-                    CommonUI.SearchBar(defalutText = "역 이름을 입력해주세요", SupabaseViewModel(SupabaseRepo()))
+                    CommonUI.SearchBar(defalutText = "역 이름을 입력해주세요")
                     ItemList(items = sampleItems)
                 }
             }
@@ -104,7 +104,7 @@ fun GreetingPreview() {
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 CommonUI.AppHeader()
-                CommonUI.SearchBar(defalutText = "역 이름을 입력해주세요", SupabaseViewModel(SupabaseRepo()))
+                CommonUI.SearchBar(defalutText = "역 이름을 입력해주세요")
                 ItemList(items = sampleItems)
             }
         }

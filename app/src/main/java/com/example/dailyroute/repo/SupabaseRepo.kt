@@ -1,5 +1,8 @@
+@file:Suppress("PLUGIN_IS_NOT_ENABLED")
+
 package com.example.dailyroute.repo
 
+import android.util.Log
 import com.example.dailyroute.BuildConfig
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
@@ -7,10 +10,15 @@ import io.github.jan.supabase.createSupabaseClient
 import io.github.jan.supabase.postgrest.Postgrest
 import io.github.jan.supabase.postgrest.from
 import io.github.jan.supabase.postgrest.query.Columns
+import io.github.jan.supabase.serializer.KotlinXSerializer
+import io.github.jan.supabase.serializer.MoshiSerializer
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.datetime.LocalDateTime
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 
 data class StationData (
     var STATN_ID: Int,          // 전철역 id
@@ -28,6 +36,26 @@ data class StationSelectData (
     var LINE_NM: String,        // 호선
     var UPDN_LINE: String       // 상,하행 / 내,외선
 )
+
+// device_station_selection DAO
+@Serializable
+data class DeviceStationSelection(
+//    @SerialName("IDX")
+    val IDX: Long? = null, // IDX는 자동 생성되므로 null로 초기화
+//    @SerialName("STATN_ID")
+    val STATN_ID: Int,
+//    @SerialName("DEVICE_ID")
+    val DEVICE_ID: String,
+//    @SerialName("STATN_NM")
+    val STATN_NM: String = "", // 기본값 설정
+//    @SerialName("LINE_NM")
+    val LINE_NM: String? = "", // NULL 허용
+//    @SerialName("UPDN_LINE")
+    val UPDN_LINE: String = "", // 기본값 설정
+//    @SerialName("SUBWAY_ID")
+    val SUBWAY_ID: Int? = null // NULL 허용
+)
+
 /*
  * MVVM에서 Model역할
  * 서버와 통신하는 역할로 자원들을 응답받아 값을 반환
@@ -39,6 +67,7 @@ class SupabaseRepo {
         supabaseUrl = SUPABASE_URL,
         supabaseKey = SUPABASE_KEY
     ) {
+        defaultSerializer = MoshiSerializer()
         install(Postgrest)
     }
 
@@ -77,6 +106,13 @@ class SupabaseRepo {
             val type = object : TypeToken<List<StationSelectData>>() {}.type
             val selectionStationList: List<StationSelectData> = gson.fromJson(fetchData, type)
             selectionStationList
+        }
+    }
+
+    suspend fun insertDeviceStationSelection(deviceStation: DeviceStationSelection) {
+        withContext(Dispatchers.IO) {
+            Log.d("DailyRoot", "insertDeviceStationSelection deviceStation: $deviceStation")
+            supabaseClient.from("device_station_selection").insert(deviceStation)
         }
     }
 }

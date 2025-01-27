@@ -3,6 +3,7 @@ import java.util.Properties
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android") version "1.9.0"
+    id("org.jetbrains.kotlin.plugin.serialization") version "1.9.0" apply false
 }
 
 android {
@@ -86,6 +87,8 @@ dependencies {
     implementation("io.github.jan-tennert.supabase:postgrest-kt")
     implementation("io.ktor:ktor-client-android:3.0.1")
     implementation("com.google.code.gson:gson:2.11.0")
+    implementation("io.github.jan-tennert.supabase:serializer-moshi:3.0.2")
+
 
     //api 호출
     implementation ("com.squareup.okhttp3:okhttp:4.11.0")
@@ -94,4 +97,6 @@ dependencies {
     // json을 kotlin문법으로 변환하기 위한 라이브러리
     implementation ("com.squareup.moshi:moshi:1.15.0")
     implementation ("com.squareup.moshi:moshi-kotlin:1.15.0")
+
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.1")
 }

@@ -1,7 +1,6 @@
 package com.example.dailyroute.common
 
 import android.util.Log
-import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -15,7 +14,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
@@ -27,31 +25,26 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.example.dailyroute.repo.DeviceStationSelection
 import com.example.dailyroute.repo.StationData
 import com.example.dailyroute.repo.SubwayArriveRepo
-import com.example.dailyroute.repo.SubwayData
+import com.example.dailyroute.repo.SupabaseRepo
 import com.example.dailyroute.viewmodel.SubwayArriveViewModel
 import com.example.dailyroute.viewmodel.SupabaseViewModel
-import com.squareup.moshi.Moshi
-import com.squareup.moshi.Types
-import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
-import org.json.JSONArray
 
 object CommonUI {
 
@@ -60,6 +53,7 @@ object CommonUI {
      */
 
     private val subwayArriveViewModel = SubwayArriveViewModel(SubwayArriveRepo())
+    private val supabaseViewModel = SupabaseViewModel(SupabaseRepo())
 
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
@@ -87,10 +81,10 @@ object CommonUI {
 
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
-    fun SearchBar(defalutText: String, viewModel: SupabaseViewModel) {
+    fun SearchBar(defalutText: String) {
         var query by remember { mutableStateOf("") } // 검색어 관리 변수
         var active by remember { mutableStateOf(false) } // 검색 바 활성화 상태
-        val searchResults by viewModel.searchResults.collectAsState() // 상태를 관찰하여 값이 변경되면 UI를 업데이트
+        val searchResults by supabaseViewModel.searchResults.collectAsState() // 상태를 관찰하여 값이 변경되면 UI를 업데이트
         var selectedIndex by remember { mutableStateOf<Int?>(null) }
 
         // material 디자인에서 제공하는 검색바 사용
@@ -100,7 +94,7 @@ object CommonUI {
                 // 검색하려는 데이터가 바뀔때 마다 호출
                 query = it
                 selectedIndex = null
-                viewModel.onSearchQueryChanged(query)
+                supabaseViewModel.onSearchQueryChanged(query)
             }, // 검색어가 변경될 때 마다 호출
             onSearch = { /* 검색 로직 추가 */ }, // 검색이 실행될 때 호출
             active = active, // 검색 바의 활성화 상태를 나타냅니다.
@@ -138,6 +132,7 @@ object CommonUI {
         isSelected: Boolean, // 선택 상태
         onClick: (StationData) -> Unit // 클릭 이벤트 핸들러
     ) {
+        val context = LocalContext.current
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -196,7 +191,19 @@ object CommonUI {
             ) {
                 if (item.UP_STATN_NM != null) {
                     Button(
-                        onClick = { /* 상행 버튼 동작 */ },
+                        onClick = {
+                            val myChoiceSubwayData = DeviceStationSelection(
+                                null,
+                                item.STATN_ID,
+                                getUUID(context),
+                                item.STATN_NM,
+                                item.LINE_NM,
+                                "상행",
+                                item.SUBWAY_ID
+                            )
+
+                            supabaseViewModel.insertMyChoiceSubwayData(myChoiceSubwayData)
+                        },
                         modifier = Modifier
                             .weight(1f)
                             .height(100.dp)
@@ -213,7 +220,19 @@ object CommonUI {
 
                 if (item.DOWN_STATN_NM != null) {
                     Button(
-                        onClick = { /* 하행 버튼 동작 */ },
+                        onClick = {
+                            val myChoiceSubwayData = DeviceStationSelection(
+                                null,
+                                item.STATN_ID,
+                                getUUID(context),
+                                item.STATN_NM,
+                                item.LINE_NM,
+                                "하행",
+                                item.SUBWAY_ID
+                            )
+
+                            supabaseViewModel.insertMyChoiceSubwayData(myChoiceSubwayData)
+                        },
                         modifier = Modifier
                             .weight(1f)
                             .height(100.dp)

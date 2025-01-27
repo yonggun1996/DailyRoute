@@ -1,7 +1,9 @@
 package com.example.dailyroute.viewmodel
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.dailyroute.repo.DeviceStationSelection
 import com.example.dailyroute.repo.StationData
 import com.example.dailyroute.repo.StationSelectData
 import com.example.dailyroute.repo.SupabaseRepo
@@ -27,6 +29,7 @@ class SupabaseViewModel(private val repository: SupabaseRepo): ViewModel() {
 
     private var searchJob: Job? = null
 
+    // supabase에 저장된 검색한 전철역의 목록을 가져오는 함수
     fun onSearchQueryChanged(query: String) {
         // 기존 작업 취소
         searchJob?.cancel()
@@ -46,6 +49,17 @@ class SupabaseViewModel(private val repository: SupabaseRepo): ViewModel() {
         searchJob = viewModelScope.launch {
             val result = repository.selectMyChoiceStation(uid)
             _selectionList.value = result
+        }
+    }
+
+    // supabase에 검색 후 선택한 데이터를 insert하는 함수
+    fun insertMyChoiceSubwayData(myChoiceSubwayData: DeviceStationSelection) {
+        // 기존 작업 취소
+        searchJob?.cancel()
+
+        searchJob = viewModelScope.launch {
+            Log.d("DailyRoot", "insertMyChoiceSubwayData myChoiceSubwayData: $myChoiceSubwayData")
+            repository.insertDeviceStationSelection(myChoiceSubwayData)
         }
     }
 }
