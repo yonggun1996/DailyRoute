@@ -7,6 +7,9 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.dailyroute.repo.StationData
+import com.example.dailyroute.repo.StationSelectData
+import com.example.dailyroute.repo.SubwayArriveData
 import com.example.dailyroute.repo.SubwayArriveRepo
 import com.example.dailyroute.repo.SubwayData
 import com.squareup.moshi.Moshi
@@ -19,48 +22,62 @@ import org.json.JSONArray
 import org.json.JSONObject
 
 class SubwayArriveViewModel(private val repository: SubwayArriveRepo): ViewModel() {
-    private val _data = MutableStateFlow<JSONObject?>(null)
-    val data: StateFlow<JSONObject?> get() = _data
+    private val _subwayArriveDataList = MutableStateFlow<List<SubwayArriveData>?>(null)
+    val subwayArriveDataList: StateFlow<List<SubwayArriveData>?> get() = _subwayArriveDataList
 
-    fun fetchData(stationID: Int, statnNm: String) {
+    fun fetchData(selectStationData: StationSelectData) {
         viewModelScope.launch {
-            _data.value = repository.getSubwayArriveData(stationID, statnNm)
-            Log.d("DailyRoot", "fetchDataResult: ${_data.value}")
+            val subwayArriveJsonData = repository.getSubwayArriveData(selectStationData.STATN_NM)
+            Log.d("SubwayArriveViewModel", "selectStationData: $selectStationData")
+
+            val status = subwayArriveJsonData?.getJSONObject("errorMessage")
+            if (status?.get("code").toString() == "INFO-000") {
+                val realtimeArrivalList = subwayArriveJsonData?.getJSONArray("realtimeArrivalList")
+
+                if (realtimeArrivalList != null) {
+                    val filterJson = filteringJSON(realtimeArrivalList, selectStationData.SUBWAY_ID.toString(), selectStationData.UPDN_LINE)
+                    if (filterJson != null) {
+                        if (_subwayArriveDataList.value == null) {
+                            // null인 경우 새 리스트로 초기화
+                            _subwayArriveDataList.value = listOf(
+                                filterJson
+                            )
+                        } else {
+                            // null이 아닌 경우 새 값을 추가
+                            _subwayArriveDataList.value = _subwayArriveDataList.value!! + filterJson
+                        }
+                    }
+                }
+            }
+            Log.d("SubwayArriveViewModel", "_subwayArriveDataList.value: ${_subwayArriveDataList.value}")
         }
     }
 
-    // jsonObject를 토대로 선택한 노선의 데이터만 추출
-    fun getSubwayByIdArray(jsonArray: JSONArray, subwayId: String): List<SubwayData> {
-        // Moshi를 사용하여 JSON을 List로 변환
-        val moshi = Moshi.Builder().add(KotlinJsonAdapterFactory()).build()
+    fun filteringJSON(realtimeArrivalList: JSONArray, subwayId: String, updnLine:String): SubwayArriveData? {
+        val resultList = mutableListOf<JSONObject>()
+        val subwayArriveData: SubwayArriveData? = null
 
-        // List<SubwayData>로 변환할 JSON 어댑터 생성
-        val listType = Types.newParameterizedType(List::class.java, SubwayData::class.java)
-        val jsonAdapter = moshi.adapter<List<SubwayData>>(listType)
+        for (i in 0 until realtimeArrivalList.length()) {
+            val obj = realtimeArrivalList.getJSONObject(i)
+            val subwayIdStr = obj.getString("subwayId")
+            val updnLineStr = obj.getString("updnLine")
 
-        // JSONArray를 List<SubwayData>로 변환
-        val subwayList: List<SubwayData> = jsonAdapter.fromJson(jsonArray.toString()) ?: emptyList()
-
-        // subwayId가 "1001"인 모든 항목을 찾아서 반환
-        return subwayList.filter { it.subwayId == subwayId }
-    }
-
-    // 추출된 데이터를 바탕으로
-    fun extractStationFromTrainLine(subwayList: List<SubwayData>): Map<String, String> {
-        val result = mutableMapOf<String, String>()
-
-        subwayList.forEach { subwayData ->
-            val trainLineNm = subwayData.trainLineNm ?: return@forEach
-            // 정규 표현식: 괄호와 그 안의 내용을 제거
-            val regex = "\\(.*?\\)".toRegex()
-            val stationName = trainLineNm.split("-").getOrNull(1)?.trim()?.replace(regex, "")
-
-            if (stationName != null) {
-                // updnLine을 key로 사용하고 stationName을 value로 추가
-                result[subwayData.updnLine] = stationName
+            // 조건: subwayId가 "1007"이고 updnLine이 "하행"
+            if (subwayIdStr == subwayId && updnLineStr == updnLine) {
+                resultList.add(obj)
             }
         }
 
-        return result
+        if (resultList.isEmpty()) {
+            return subwayArriveData
+        } else {
+            return SubwayArriveData(
+                subwayName = resultList[0].getString("statnNm"),    // 전철역 이름
+                terminus = resultList[0].getString("bstatnNm"),    // 행선지
+                arrivalTime = resultList[0].getString("arvlMsg2"), // 도착 시간
+                lineNum = resultList[0].getString("subwayId")      // 호선
+            )
+        }
     }
+
 }

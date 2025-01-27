@@ -32,8 +32,10 @@ data class StationData (
 
 // json필터링을 위한 클래스
 data class StationSelectData (
+    var IDX: Long,
     var STATN_NM: String,       // 선택한 역명
     var LINE_NM: String,        // 호선
+    var SUBWAY_ID: Int,
     var UPDN_LINE: String       // 상,하행 / 내,외선
 )
 
@@ -96,7 +98,7 @@ class SupabaseRepo {
 
             val fetchData = supabaseClient
                 .from("device_station_selection")
-                .select(columns = Columns.list("STATN_NM, LINE_NM, UPDN_LINE")) {
+                .select(columns = Columns.list("IDX, STATN_NM, LINE_NM, SUBWAY_ID, UPDN_LINE")) {
                     filter {
                         eq("DEVICE_ID", uid)
                     }

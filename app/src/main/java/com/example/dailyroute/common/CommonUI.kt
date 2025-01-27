@@ -5,6 +5,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -14,6 +15,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
@@ -39,6 +41,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.example.dailyroute.listcode.CustomListItem
 import com.example.dailyroute.repo.DeviceStationSelection
 import com.example.dailyroute.repo.StationData
 import com.example.dailyroute.repo.SubwayArriveRepo
@@ -116,7 +119,7 @@ object CommonUI {
 
                             // 11.11 응암역이 업데잍트 되었음
                             if (item.STATN_NM == "응암") item.STATN_NM = "응암순환(상선)"
-                            subwayArriveViewModel.fetchData(item.STATN_ID, item.STATN_NM)
+//                            subwayArriveViewModel.fetchData(item.STATN_ID, item.STATN_NM)
 
                             selectedIndex = if (selectedIndex == index) null else index
                         }
@@ -169,20 +172,6 @@ object CommonUI {
         }
         // 선택된 경우 버튼 추가
         if (isSelected) {
-//            val subwayArriveJson by subwayArriveViewModel.data.collectAsState() // 선택한 역의 실시간 정보 상태를 저장
-//
-//            if (subwayArriveJson != null) {
-//                val reusltCode = subwayArriveJson?.getJSONObject("errorMessage")?.getString("code") ?: return
-//                if (reusltCode != "INFO-000") return
-//
-//                val realtimeArrivalList = subwayArriveJson?.getJSONArray("realtimeArrivalList") ?: return
-//                val subwayIdFilterResult = subwayArriveViewModel.getSubwayByIdArray(realtimeArrivalList, item.SUBWAY_ID.toString())
-//                val nextStationResult = subwayArriveViewModel.extractStationFromTrainLine(subwayIdFilterResult)
-//                Log.d("DailyRoot", "nextStationResult: ${nextStationResult}")
-//
-//
-//            }
-
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -248,5 +237,32 @@ object CommonUI {
                 }
             }
         }
+    }
+
+    // 본문이 될 List
+    @Composable
+    fun MainContent() {
+        // 1. supabase에서 내가 선택한 데이터만 select
+        val searchResults by supabaseViewModel.selectionList.collectAsState() // 상태를 관찰하여 값이 변경되면 UI를 업데이트
+        supabaseViewModel.onSearchSelectionList(getUUID(LocalContext.current))
+        Log.d("DailyRoot", "searchResults: $searchResults")
+
+        // 2. 내가 선택한 전철역의 실시간 정보를 리스트에 저장
+        searchResults.forEach { it ->
+            Log.d("DailyRoot", "searchResults.it: ${it}")
+            subwayArriveViewModel.fetchData(it)
+        }
+
+        val myChoiceSubwayList = subwayArriveViewModel.subwayArriveDataList.collectAsState()
+        Log.d("DailyRoot", "myChoiceSubwayList: ${myChoiceSubwayList.value}")
+//        LazyColumn(
+//            modifier = Modifier.fillMaxSize(),
+//            contentPadding = PaddingValues(16.dp),
+//            verticalArrangement = Arrangement.spacedBy(8.dp) // 항목 간 간격 설정
+//        ) {
+//            items(items) {it
+//                CustomListItem(item = it) // 지하철 도착 정보 전달
+//            }
+//        }
     }
 }

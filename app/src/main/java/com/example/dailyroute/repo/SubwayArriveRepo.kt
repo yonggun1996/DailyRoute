@@ -43,13 +43,21 @@ data class SubwayData(
     val lstcarAt: String
 )
 
+// 지하철 도착시간 data
+data class SubwayArriveData (
+    val subwayName: String,     // 내가 설정한 전철역
+    val terminus: String,       // 해당 전철의 행선지
+    val arrivalTime: String,    // 도착 시간
+    val lineNum: String         // 호선
+)
+
 
 // 지하철 도착 관련 api호출 및 비즈니스로직 처리하는 Model 구현부
 class SubwayArriveRepo {
     private val okHttpClient = OkHttpClient()
 
     // 지하철 실시간 도착api 호출 및 xml응답을 json으로 변환
-    suspend fun getSubwayArriveData(stationID: Int, statnNm: String): JSONObject? {
+    suspend fun getSubwayArriveData(statnNm: String): JSONObject? {
         val SUBWAY_API_KEY = BuildConfig.SUBWAY_API_KEY
         val requestURL = "http://swopenAPI.seoul.go.kr/api/subway/${SUBWAY_API_KEY}/json/realtimeStationArrival/0/99/${statnNm}"
 

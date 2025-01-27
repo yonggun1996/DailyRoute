@@ -57,8 +57,6 @@ class MainActivity : ComponentActivity() {
             )
         }
 
-        val supabaseViewModel = SupabaseViewModel(SupabaseRepo())
-
         super.onCreate(savedInstanceState)
         setContent {
             DailyRouteTheme {
@@ -70,13 +68,10 @@ class MainActivity : ComponentActivity() {
                     verticalArrangement = Arrangement.Top,
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    val uniqueID = getUUID(LocalContext.current)
-                    // 리스트뷰 샘플 데이터
-                    supabaseViewModel.onSearchSelectionList(uniqueID)
-                    val sampleItems2 by supabaseViewModel.selectionList.collectAsState()
                     CommonUI.AppHeader()
                     CommonUI.SearchBar(defalutText = "역 이름을 입력해주세요")
-                    ItemList(items = sampleItems)
+                    CommonUI.MainContent()
+//                    ItemList(items = sampleItems)
                 }
             }
         }
@@ -86,28 +81,29 @@ class MainActivity : ComponentActivity() {
 @Preview(showBackground = true)
 @Composable
 fun GreetingPreview() {
-    val sampleItems = List(10) { index ->
-        SubwayArriveData(
-            subwayName = "태릉입구역",
-            terminus = "봉화산",
-            arrivalTime = "5분",
-            lineNum = "6호선"
-        )
-    }
-        DailyRouteTheme {
-            // A surface container using the 'background' color from the theme
-            Column (
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(16.dp),
-                verticalArrangement = Arrangement.Top,
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                CommonUI.AppHeader()
-                CommonUI.SearchBar(defalutText = "역 이름을 입력해주세요")
-                ItemList(items = sampleItems)
-            }
-        }
+//    val sampleItems = List(10) { index ->
+//        SubwayArriveData(
+//            subwayName = "태릉입구역",
+//            terminus = "봉화산",
+//            arrivalTime = "5분",
+//            lineNum = "6호선"
+//        )
+//    }
+//        DailyRouteTheme {
+//            // A surface container using the 'background' color from the theme
+//            Column (
+//                modifier = Modifier
+//                    .fillMaxSize()
+//                    .padding(16.dp),
+//                verticalArrangement = Arrangement.Top,
+//                horizontalAlignment = Alignment.CenterHorizontally
+//            ) {
+//                CommonUI.AppHeader()
+//                CommonUI.SearchBar(defalutText = "역 이름을 입력해주세요")
+//                CommonUI.MainContent()
+////                ItemList(items = sampleItems)
+//            }
+//        }
 
 }
 
