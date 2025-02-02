@@ -27,6 +27,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -179,6 +180,12 @@ object CommonUI {
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 if (item.UP_STATN_NM != null) {
+                    val updnLine = if (item.SUBWAY_ID == 1002) {
+                        "외선"
+                    } else {
+                        "상행"
+                    }
+
                     Button(
                         onClick = {
                             val myChoiceSubwayData = DeviceStationSelection(
@@ -187,7 +194,7 @@ object CommonUI {
                                 getUUID(context),
                                 item.STATN_NM,
                                 item.LINE_NM,
-                                "상행",
+                                updnLine,
                                 item.SUBWAY_ID
                             )
 
@@ -208,6 +215,12 @@ object CommonUI {
                 }
 
                 if (item.DOWN_STATN_NM != null) {
+                    val updnLine = if (item.SUBWAY_ID == 1002) {
+                        "내선"
+                    } else {
+                        "하행"
+                    }
+
                     Button(
                         onClick = {
                             val myChoiceSubwayData = DeviceStationSelection(
@@ -216,7 +229,7 @@ object CommonUI {
                                 getUUID(context),
                                 item.STATN_NM,
                                 item.LINE_NM,
-                                "하행",
+                                updnLine,
                                 item.SUBWAY_ID
                             )
 
@@ -247,22 +260,28 @@ object CommonUI {
         supabaseViewModel.onSearchSelectionList(getUUID(LocalContext.current))
         Log.d("DailyRoot", "searchResults: $searchResults")
 
-        // 2. 내가 선택한 전철역의 실시간 정보를 리스트에 저장
-        searchResults.forEach { it ->
-            Log.d("DailyRoot", "searchResults.it: ${it}")
-            subwayArriveViewModel.fetchData(it)
+        // 2. 내가 선택한 전철역의 리스트를 통해 각 역의 실시간 정보를 가져옴
+        LaunchedEffect(searchResults) {
+            if (searchResults.isNotEmpty()) { // 값이 있을 때만 실행
+                subwayArriveViewModel.addSubwayList(searchResults)
+            }
         }
 
         val myChoiceSubwayList = subwayArriveViewModel.subwayArriveDataList.collectAsState()
         Log.d("DailyRoot", "myChoiceSubwayList: ${myChoiceSubwayList.value}")
-//        LazyColumn(
-//            modifier = Modifier.fillMaxSize(),
-//            contentPadding = PaddingValues(16.dp),
-//            verticalArrangement = Arrangement.spacedBy(8.dp) // 항목 간 간격 설정
-//        ) {
-//            items(items) {it
-//                CustomListItem(item = it) // 지하철 도착 정보 전달
-//            }
-//        }
+        ItemList(myChoiceSubwayList.value)
+    }
+
+    @Composable
+    fun ItemList(items: List<com.example.dailyroute.repo.SubwayArriveData>) {
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = PaddingValues(16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp) // 항목 간 간격 설정
+        ) {
+            items(items) {it
+                CustomListItem(item = it) // 지하철 도착 정보 전달
+            }
+        }
     }
 }

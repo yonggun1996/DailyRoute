@@ -22,35 +22,33 @@ import org.json.JSONArray
 import org.json.JSONObject
 
 class SubwayArriveViewModel(private val repository: SubwayArriveRepo): ViewModel() {
-    private val _subwayArriveDataList = MutableStateFlow<List<SubwayArriveData>?>(null)
-    val subwayArriveDataList: StateFlow<List<SubwayArriveData>?> get() = _subwayArriveDataList
+    private val _subwayArriveDataList = MutableStateFlow<List<SubwayArriveData>>(emptyList())
+    val subwayArriveDataList: StateFlow<List<SubwayArriveData>> get() = _subwayArriveDataList
 
-    fun fetchData(selectStationData: StationSelectData) {
-        viewModelScope.launch {
-            val subwayArriveJsonData = repository.getSubwayArriveData(selectStationData.STATN_NM)
-            Log.d("SubwayArriveViewModel", "selectStationData: $selectStationData")
-
-            val status = subwayArriveJsonData?.getJSONObject("errorMessage")
-            if (status?.get("code").toString() == "INFO-000") {
-                val realtimeArrivalList = subwayArriveJsonData?.getJSONArray("realtimeArrivalList")
-
-                if (realtimeArrivalList != null) {
-                    val filterJson = filteringJSON(realtimeArrivalList, selectStationData.SUBWAY_ID.toString(), selectStationData.UPDN_LINE)
-                    if (filterJson != null) {
-                        if (_subwayArriveDataList.value == null) {
-                            // null인 경우 새 리스트로 초기화
-                            _subwayArriveDataList.value = listOf(
-                                filterJson
-                            )
-                        } else {
-                            // null이 아닌 경우 새 값을 추가
-                            _subwayArriveDataList.value = _subwayArriveDataList.value!! + filterJson
-                        }
-                    }
-                }
+    suspend fun addSubwayList(list: List<StationSelectData>) {
+        list.forEach { it ->
+            val stationArriveData = fetchData(it)
+            if (stationArriveData != null) {
+                Log.d("DailyRoot", "stationArriveData: ${stationArriveData}")
+                _subwayArriveDataList.value += stationArriveData
             }
-            Log.d("SubwayArriveViewModel", "_subwayArriveDataList.value: ${_subwayArriveDataList.value}")
         }
+    }
+
+    suspend fun fetchData(selectStationData: StationSelectData): SubwayArriveData? {
+        val subwayArriveJsonData = repository.getSubwayArriveData(selectStationData.STATN_NM)
+
+        var subwayArriveData: SubwayArriveData? = null
+        val status = subwayArriveJsonData?.getJSONObject("errorMessage")
+        if (status?.get("code").toString() == "INFO-000") {
+            val realtimeArrivalList = subwayArriveJsonData?.getJSONArray("realtimeArrivalList")
+
+            if (realtimeArrivalList != null) {
+                subwayArriveData = filteringJSON(realtimeArrivalList, selectStationData.SUBWAY_ID.toString(), selectStationData.UPDN_LINE)
+            }
+        }
+
+        return subwayArriveData
     }
 
     fun filteringJSON(realtimeArrivalList: JSONArray, subwayId: String, updnLine:String): SubwayArriveData? {
